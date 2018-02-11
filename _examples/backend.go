@@ -18,7 +18,7 @@ func main() {
 	http.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("handling:", r.URL.Path)
 		time.Sleep(time.Millisecond) // Arbitrary delay to help illustrate HTTP/2 multiplexing
-		w.Write([]byte(r.Proto + " " + r.Method + " " + r.URL.Path + "\n"))
+		w.Write([]byte("bar"))
 	})
 
 	log.Println("Dialing tcp://localhost:8887 and serving HTTP/2 traffic")
