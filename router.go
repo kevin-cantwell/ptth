@@ -90,7 +90,7 @@ func (t *Tunnel) Closed() bool {
 }
 
 // Router manages a pool of reverse HTTP tunnels and routes HTTP
-// traffic to them in a randomized pattern.
+// traffic to them in a randomized pattern. Implements http.Handler.
 type Router struct {
 	mu   sync.Mutex
 	pool []*Tunnel
