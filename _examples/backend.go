@@ -1,50 +1,28 @@
+/*
+  This is an example of a backend web service that serves traffic over a reverse
+  HTTP tunnel instead of listening on a port. The service is responsible for
+  dialing a single TCP connection to a router and all requests are multiplexed
+  over the connection using HTTP/2.
+*/
 package main
 
 import (
 	"log"
-	"net"
 	"net/http"
-	"os"
+	"time"
 
-	"github.com/hkwi/h2c"
+	"github.com/kevin-cantwell/ptth"
 )
 
-type ListenerConn struct {
-	conn net.Conn
-}
-
-func (l *ListenerConn) Accept() (net.Conn, error) {
-	return l.conn, nil
-}
-
-func (l *ListenerConn) Close() error {
-	return l.conn.Close()
-}
-
-func (l *ListenerConn) Addr() net.Addr {
-	return l.conn.LocalAddr()
-}
-
 func main() {
-	raddr, err := net.ResolveTCPAddr("tcp", os.Args[1])
-	if err != nil {
-		log.Fatal(err)
-	}
-	conn, err := net.DialTCP("tcp", nil, raddr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	http.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("handling:", r.URL.Path)
-		w.Write([]byte(r.URL.Path + "\n"))
+		time.Sleep(time.Millisecond) // Arbitrary delay to help illustrate HTTP/2 multiplexing
+		w.Write([]byte(r.Proto + " " + r.Method + " " + r.URL.Path + "\n"))
 	})
 
-	s := http.Server{
-		Handler: &h2c.Server{},
+	log.Println("Dialing tcp://localhost:8887 and serving HTTP/2 traffic")
+	if err := ptth.DialRouterAndServe(":8887", nil); err != nil {
+		log.Println(err)
 	}
-	if err := s.Serve(&ListenerConn{conn: conn}); err != nil {
-		log.Fatalln("Failed to serve:", err)
-	}
-	log.Println("disconnected")
 }
