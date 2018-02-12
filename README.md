@@ -13,7 +13,7 @@ This project includes a router implementation and a package function that backen
 
 The router accepts HTTP traffic and acts as a load-balancer and reverse-proxy to the backend services. Backend services dial the router on a TCP port (which is separate from the HTTP port the router accepts user requests on) and establishes a reverse HTTP tunnel, handling all requests over HTTP/2. As such, no ingress configuration is required for the backend services. Nor is any service discovery needed beyond knowing the router address. This is the point of ReverseHTTP ;)
 
-I should mention that [backplane.io](https://backplane.io) already offers production-grade ReverseHTTP as a service. Their solution uses a host agent that performs the tunneling magic and acts as a reverse proxy on localhost. My implementation is an in-process solution that is for illustration purposes only.
+I should mention that [backplane.io](https://backplane.io) already offers production-grade ReverseHTTP as a service. Their solution uses a host agent that performs the tunneling magic and acts as a reverse proxy on localhost. My implementation is an in-process solution that is for illustrative purposes only.
 
 ## What's not in this project?
 
@@ -28,12 +28,12 @@ However, if the tunneling port is only exposed to services running within a priv
 Start a HTTP server that routes requests to ReverseHTTP tunnels:
 
 ```sh
-$ go run _exampes/router.go
+$ go run _examples/router.go
 2018/02/11 17:19:00 Listening for reverse tunnels on tcp://localhost:8887
 2018/02/11 17:19:00 Listening for HTTP traffic on http://localhost:8888
 ```
 
-Start a backend web service that tunnels into the router and handles `GET /foo` requests:
+Start one or more backend web services that tunnel into the router and handles `GET /foo` requests:
 
 ```sh
 $ go run _examples/backend.go
