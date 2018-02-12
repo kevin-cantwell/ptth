@@ -8,14 +8,14 @@ import (
 	"golang.org/x/net/http2"
 )
 
-// DialRouterAndServe establishes a tcp connection to addr and
+// CreateTunnelAndServe establishes a tcp connection to addr and
 // serves incoming HTTP/2 requests. Only a single connection
 // is used to multiplex requests. An error will be returned
 // if any of the following occur: 1) A tcp connection cannot
 // be established to the router; 2) The connection is
-// closed by the remote host; or 3) The http2 package stops serving
-// requests.
-func DialRouterAndServe(addr string, handler http.Handler) error {
+// closed by the remote host; or 3) The http2 server stops serving
+// requests due to an internal error.
+func CreateTunnelAndServe(addr string, handler http.Handler) error {
 	raddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
 		return err
@@ -28,6 +28,7 @@ func DialRouterAndServe(addr string, handler http.Handler) error {
 
 	s := http2.Server{}
 	s.ServeConn(conn, &http2.ServeConnOpts{
+		// If handler is nil, defaults to http.DefaultServeMux
 		Handler: handler,
 	})
 	// if we've reached this point, the reason is internal to

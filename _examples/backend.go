@@ -22,7 +22,7 @@ func main() {
 	})
 
 	log.Println("Dialing tcp://localhost:8887 and serving HTTP/2 traffic")
-	if err := ptth.DialRouterAndServe(":8887", nil); err != nil {
+	if err := ptth.CreateTunnelAndServe(":8887", nil); err != nil {
 		log.Println(err)
 	}
 }

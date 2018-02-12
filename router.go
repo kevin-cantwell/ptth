@@ -24,14 +24,16 @@ var (
 // connection is closed. We do this because the underlying connection is difficult
 // to extract from the http and http2 packages. One could argue this is a dirty hack.
 type netConn struct {
-	net.Conn // Embedded net.Conn ensures net.Conn implementation
-	closed   bool
+	// Embedded net.Conn ensures net.Conn implementation
+	net.Conn
+	// The most recent error that occured from a read or write
+	err error
 }
 
 func (c *netConn) Read(b []byte) (int, error) {
 	n, err := c.Conn.Read(b)
 	if err != nil {
-		c.closed = true
+		c.err = err
 	}
 	return n, err
 }
@@ -39,7 +41,7 @@ func (c *netConn) Read(b []byte) (int, error) {
 func (c *netConn) Write(b []byte) (int, error) {
 	n, err := c.Conn.Write(b)
 	if err != nil {
-		c.closed = true
+		c.err = err
 	}
 	return n, err
 }
@@ -51,7 +53,8 @@ type Tunnel struct {
 	conn  *netConn
 }
 
-// Provides a new instance of *Tunnel that i
+// NewTunnel provides a new instance of *Tunnel that will tunnel http requests
+// on the provided net.Conn.
 func NewTunnel(conn net.Conn) *Tunnel {
 	nc := &netConn{Conn: conn}
 
@@ -76,17 +79,17 @@ func NewTunnel(conn net.Conn) *Tunnel {
 	}
 }
 
-// ServeHTTP multiplexes requests on a single TCP connection by using
+// ServeHTTP multiplexes requests on a single TCP connection using
 // HTTP/2.
 func (t *Tunnel) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.proxy.ServeHTTP(w, r)
 }
 
-// Closed indicates if there have been any read or write errors on the
-// underlying connection. Clients may use this information to decide to
-// evict the tunnel from a pool of tunnels.
-func (t *Tunnel) Closed() bool {
-	return t.conn.closed
+// Err indicates if there have been any read or write errors on the
+// underlying connection. Clients may use this information to determine
+// that a tunnel is broken.
+func (t *Tunnel) Err() error {
+	return t.conn.err
 }
 
 // Router manages a pool of reverse HTTP tunnels and routes HTTP
@@ -157,9 +160,9 @@ func (router *Router) GetTunnel() *Tunnel {
 		}
 		i := rand.Intn(len(router.pool))
 		tunnel := router.pool[i]
-		if tunnel.Closed() {
+		if err := tunnel.Err(); err != nil {
 			router.pool = append(router.pool[:i], router.pool[i+1:]...)
-			log.Println("Tunnel removed:", tunnel.conn.RemoteAddr().String())
+			log.Println("Tunnel removed:", tunnel.conn.RemoteAddr().String()+":", err)
 			continue
 		}
 		return tunnel
