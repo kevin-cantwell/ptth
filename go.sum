@@ -1,0 +1,5 @@
+github.com/hkwi/h2c v0.0.0-20170220133303-76facb310bcf/go.mod h1:AJbHlyH47NKOuOlKof6KtyTfbIUCYG1wluYTdGV7uJM=
+golang.org/x/net v0.0.0-20180124060956-0ed95abb35c4 h1:BLERX6fu5dNMZcaGP2RzbrDZpHQbDkAoG9oiTRXbWr0=
+golang.org/x/net v0.0.0-20180124060956-0ed95abb35c4/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+golang.org/x/text v0.0.0-20171227012246-e19ae1496984 h1:ulYJn/BqO4fMRe1xAQzWjokgjsQLPpb21GltxXHI3fQ=
+golang.org/x/text v0.0.0-20171227012246-e19ae1496984/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
